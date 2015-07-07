@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 SecureKey Technologies Inc. All rights reserved.
+/* Copyright (c) 2014, 2015 SecureKey Technologies Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 
 import com.securekey.connect.beans.Response;
 import com.securekey.connect.beans.client.CancelRequestRequest;
-import com.securekey.connect.beans.client.GenerateQuickCodeRequest;
+import com.securekey.connect.beans.client.SetQuickCodeRequest;
 import com.securekey.connect.beans.client.GetDataRequest;
 import com.securekey.connect.beans.client.GetDeviceIdResponse;
 import com.securekey.connect.beans.client.GetProvisioningAuthorizationCodeResponse;
@@ -52,7 +52,8 @@ import com.securekey.connect.beans.mgmt.RemoveAllUserDevicesRequest;
 import com.securekey.connect.beans.mgmt.RemoveDeviceRequest;
 import com.securekey.connect.beans.mgmt.UpdateUserRequest;
 import com.securekey.connect.beans.mgmt.VerifyDeviceRequest;
-import com.securekey.connect.clientsdk.SKClient;
+import com.securekey.connect.core.ConnectClientFactory;
+import com.securekey.connect.core.ConnectClient;
 import com.securekey.samplerp.service.BriidgeService;
 
 /**
@@ -65,7 +66,7 @@ import com.securekey.samplerp.service.BriidgeService;
 public class BriidgeServiceImpl implements BriidgeService {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
-
+/*
 	@Value("#{system['keystoreFile']}")
 	private String keyStoreFile;
 
@@ -74,15 +75,17 @@ public class BriidgeServiceImpl implements BriidgeService {
 
 	@Value("#{system['briidgeServerUrl']}")
 	private String briidgeServerUrl;
-
-	private SKClient skClient;
+*/
+	private ConnectClient skClient;
 
 	@PostConstruct
 	private void initBriidgeService() {
-		log.info("keyStoreFile " + keyStoreFile);
-		log.info("keyStoreFilePassword " + keyStoreFilePassword);
-		log.info("briidgeServerUrl " + briidgeServerUrl);
-		skClient = new SKClient(briidgeServerUrl, keyStoreFile, keyStoreFilePassword);
+              try {
+		skClient = new ConnectClientFactory("system.properties").createClient();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    log.error(e.getMessage());
+                }
 	}
 
 	@Override
@@ -90,7 +93,7 @@ public class BriidgeServiceImpl implements BriidgeService {
 
 		GetDataRequest getDataRequest = new GetDataRequest();
 		getDataRequest.setTxnId(txnId);
-		return skClient.deviceInitiatedCardReadData(getDataRequest);
+		return skClient.getCardReadData(getDataRequest);
 	}
 
 	@Override
@@ -98,7 +101,7 @@ public class BriidgeServiceImpl implements BriidgeService {
 
 		GetDataRequest getDataRequest = new GetDataRequest();
 		getDataRequest.setTxnId(txnId);
-		return skClient.deviceInitiatedCardReadData(getDataRequest);
+		return skClient.getCardReadData(getDataRequest);
 	}
 
 
@@ -107,7 +110,7 @@ public class BriidgeServiceImpl implements BriidgeService {
 
 		GetDataRequest getDataRequest = new GetDataRequest();
 		getDataRequest.setTxnId(txnId);
-		return skClient.deviceInitiatedGetDevice(getDataRequest);
+		return skClient.getDeviceData(getDataRequest);
 	}
 
 	@Override
@@ -126,7 +129,7 @@ public class BriidgeServiceImpl implements BriidgeService {
 	@Override
 	public TxnResponse initSetQuickCode(String userId, String context) throws Exception {
 
-		GenerateQuickCodeRequest generateQuickCodeRequest = new GenerateQuickCodeRequest();
+		SetQuickCodeRequest generateQuickCodeRequest = new SetQuickCodeRequest();
 		if (isNotBlank(userId)) {
 			generateQuickCodeRequest.setUserId(userId);
 		}
@@ -135,7 +138,7 @@ public class BriidgeServiceImpl implements BriidgeService {
 			generateQuickCodeRequest.setContext(context);
 		}
 
-		return skClient.initSetQuickCode(generateQuickCodeRequest);
+		return skClient.setQuickCode(generateQuickCodeRequest);
 	}
 
 	@Override
@@ -143,7 +146,7 @@ public class BriidgeServiceImpl implements BriidgeService {
 
 		GetDataRequest getDataRequest = new GetDataRequest();
 		getDataRequest.setTxnId(txnId);
-		Response response = skClient.setQuickCodeData(getDataRequest);
+		Response response = skClient.getSetQuickCodeData(getDataRequest);
 		return response;
 	}
 
@@ -167,7 +170,7 @@ public class BriidgeServiceImpl implements BriidgeService {
 			addUserRequest.setPhone(new Phone[0]);
 		}
 
-		TxnResponse txnResponse = skClient.addUser(addUserRequest);
+		TxnResponse txnResponse = skClient.createUser(addUserRequest);
 		return txnResponse;
 	}
 
@@ -276,7 +279,7 @@ public class BriidgeServiceImpl implements BriidgeService {
 
 		GetDataRequest getDataRequest = new GetDataRequest();
 		getDataRequest.setTxnId(txnId);
-		return skClient.pairDeviceData(getDataRequest);
+		return skClient.getPairDeviceData(getDataRequest);
 	}
 
 	@Override
@@ -324,7 +327,7 @@ public class BriidgeServiceImpl implements BriidgeService {
 
 		RemoveAllUserDevicesRequest removeAllUserDevicesRequest = new RemoveAllUserDevicesRequest();
 		removeAllUserDevicesRequest.setUserId(userId);
-		return skClient.removeAllUserDevices(removeAllUserDevicesRequest);
+		return skClient.removeAllDevices(removeAllUserDevicesRequest);
 	}
 
 	@Override
@@ -335,7 +338,7 @@ public class BriidgeServiceImpl implements BriidgeService {
 
 		GetDataRequest getDataRequest = new GetDataRequest();
 		getDataRequest.setTxnId(txnId);
-		GetDeviceIdResponse getDeviceIdResult = skClient.deviceInitiatedGetDevice(getDataRequest);
+		GetDeviceIdResponse getDeviceIdResult = skClient.getDeviceData(getDataRequest);
 		log.info("Device id : " + getDeviceIdResult.getDeviceInfo().getDeviceId());
 		return getDeviceIdResult;
 	}
@@ -353,7 +356,7 @@ public class BriidgeServiceImpl implements BriidgeService {
 
 		GetDataRequest getDataRequest = new GetDataRequest();
 		getDataRequest.setTxnId(txnId);
-		VerifyQuickCodeResponse verifyQuickCodeResult = skClient.verifyQuickCodeData(getDataRequest);
+		VerifyQuickCodeResponse verifyQuickCodeResult = skClient.getVerifyPassCodeData(getDataRequest);
 		
 		log.info("Is verified quick code : " + verifyQuickCodeResult.isVerifiedQuickCode());
 		return verifyQuickCodeResult;
