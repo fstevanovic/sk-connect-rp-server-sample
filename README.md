@@ -1,6 +1,6 @@
 RP Server Sample
 
-Sample RP server is intended to demonstrate barebone functionality that Relaying Party app server would need in order to utilize SecureKey briidge.Net Connect platform.
+Sample RP server is intended to demonstrate barebone functionality that Relaying Party (RP) app server would need in order to utilize SecureKey briidge.Net Connect platform.
 
 For more information about briidge.net Connect visit [http://developer.securekey.com](http://developer.securekey.com)
  
@@ -51,3 +51,4 @@ Make sure that your mobile app is running on the device where it can access your
 
 If you have custom certificate (only JKS supported in this sample code), replace _RP_MobileSamples.jks_ with your own keystore in _src/main/resources/keystore_.
 Update _system.properties_ to configure your own _keystoreFile_ and _keystoreFilePassword_ 
+
